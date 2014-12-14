@@ -1,19 +1,21 @@
 package simpixl.stitchplease;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 
 public class CountActivity extends Activity {
 
-    private Button addButton;
-    private Button subtractButton;
-    private Button clearButton;
     private EditText counter;
     private int count = 0;
 
@@ -23,16 +25,16 @@ public class CountActivity extends Activity {
         setContentView(R.layout.activity_count);
 
         // add button logic
-        addButton = (Button)findViewById(R.id.add_button);
+        Button addButton = (Button) findViewById(R.id.add_button);
         addButton.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View view) {
-               increment();
-           }
+            @Override
+            public void onClick(View view) {
+                increment();
+            }
         });
 
         // subtract button logic
-        subtractButton = (Button)findViewById(R.id.subtract_button);
+        Button subtractButton = (Button) findViewById(R.id.subtract_button);
         subtractButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -41,7 +43,7 @@ public class CountActivity extends Activity {
         });
 
         // clear button logic
-        clearButton = (Button)findViewById(R.id.clear_button);
+        Button clearButton = (Button) findViewById(R.id.clear_button);
         clearButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -51,10 +53,39 @@ public class CountActivity extends Activity {
 
         // counter logic
         counter = (EditText)findViewById(R.id.counter);
-
+        counter.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    setCounter();
+                    handled = true;
+                }
+                return handled;
+            }
+        });
     }
 
 
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_VOLUME_UP:
+                increment();
+                return true;
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                decrement();
+                return true;
+            default:
+                return super.onKeyDown(keyCode, event);
+        }
+    }
+
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN  )
+            return true;
+        return super.onKeyUp(keyCode, event);
+    }
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -75,6 +106,15 @@ public class CountActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    public void setCounter() {
+        if (counter.getText().toString().length()>0) {
+            count = Integer.parseInt(counter.getText().toString());
+        }
+        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(counter.getWindowToken(), 0);
     }
 
     public void increment() {
